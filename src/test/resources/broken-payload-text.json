@@ -1,0 +1,14 @@
+{
+  "project_id": "project-id",
+  "message": {
+    "id": "message-id",
+    "direction": "direction",
+    "contact_message": {
+      "text_message": {
+        "text": "body"
+      }
+    },
+    "conversation_id": "conversation-id",
+    "contact_id": "contact-id"
+  }
+}

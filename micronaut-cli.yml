@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: tech.rican
+testFramework: kotest
+sourceLanguage: kotlin
+buildTool: gradle_kotlin
+features: [app-name, gradle, http-client-test, jackson-databind, kotest, kotlin, kotlin-application, ksp, logback, micronaut-aot, micronaut-build, netty-server, properties, readme, serialization-jackson, shade]
