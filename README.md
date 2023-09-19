@@ -1,35 +1,33 @@
-## Micronaut 4.1.1 Documentation
+# Repository to reproduce the issue when using `JsonTypeInfo.As.WRAPPER_OBJECT`
 
-- [User Guide](https://docs.micronaut.io/4.1.1/guide/index.html)
-- [API Reference](https://docs.micronaut.io/4.1.1/api/index.html)
-- [Configuration Reference](https://docs.micronaut.io/4.1.1/guide/configurationreference.html)
-- [Micronaut Guides](https://guides.micronaut.io/index.html)
----
+## Description
 
-- [Shadow Gradle Plugin](https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow)
-- [Micronaut Gradle Plugin documentation](https://micronaut-projects.github.io/micronaut-gradle-plugin/latest/)
-- [GraalVM Gradle Plugin documentation](https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html)
-## Feature micronaut-aot documentation
+If `WRAPPER_OBJECT` is used the correct deserialization depends on attributes order.
+1) See [broken-payload](src/test/resources/broken-payload-text.json) - if `contact_message` is followed by any other attributes values are not deserialized (== null)
+2) See [valid-payload](src/test/resources/payload-text-diff-order.json) - if `contact_message` is placed as last attribute object is deserialized fully and correctly
+3) If `contact_message` is defined not as last within the code (or by definition of Order). The resulting json object having miss-placed the later attributes. In my example e.g. conversation_id and contact_id as serialized JSON looks as follows:
+```json
+{
+  "project_id": "project-id",
+  "message": {
+    "id": "message-id",
+    "direction": "direction",
+    "contact_message": {
+      "text_message": {
+        "text": "Body"
+      },
+      "conversation_id": "conversation-id",
+      "contact_id": "contact-id"
+    }
+  }
+}
+```
 
-- [Micronaut AOT documentation](https://micronaut-projects.github.io/micronaut-aot/latest/guide/)
+## Assumptions
+- I did some investigation and it seems when we de-serialize the wrapper object and call the `io.micronaut.serde.Decoder.finishStructure(boolean)` when we are increment remaining depth we only increment by +1 which breaks the `objectDecoder` logic defined at `io/micronaut/serde/support/deserializers/SimpleObjectDeserializer.java:90` as it returns `null` on decodeKey() which stops the `Message` object de-serialization.
 
+## Resources
 
-## Feature serialization-jackson documentation
+The models can be found [here](src/main/kotlin/tech/rican/model/Request.kt)
 
-- [Micronaut Serialization Jackson Core documentation](https://micronaut-projects.github.io/micronaut-serialization/latest/guide/)
-
-
-## Feature ksp documentation
-
-- [Micronaut Kotlin Symbol Processing (KSP) documentation](https://docs.micronaut.io/latest/guide/#kotlin)
-
-- [https://kotlinlang.org/docs/ksp-overview.html](https://kotlinlang.org/docs/ksp-overview.html)
-
-
-## Feature kotest documentation
-
-- [Micronaut Test Kotest5 documentation](https://micronaut-projects.github.io/micronaut-test/latest/guide/#kotest5)
-
-- [https://kotest.io/](https://kotest.io/)
-
-
+The test to simulate the scenarios [here](src/test/kotlin/tech/rican/Test.kt)
